@@ -2,13 +2,20 @@ from typing import List
 from fastapi import FastAPI, HTTPException, status
 from fastapi.params import Depends
 from sqlalchemy.orm.session import Session
+from fastapi.security import OAuth2PasswordBearer
 
 from src import crud, schemas, models
 from src.database import engine, get_db
 
 app = FastAPI()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
 models.Base.metadata.create_all(bind=engine)
+
+
+@app.get('/locked/')
+async def read_locked_data(token: str = Depends(oauth2_scheme)):
+    return {'token': token}
 
 
 @app.get('/items/', tags=['Item'], response_model=List[schemas.Item])

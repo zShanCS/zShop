@@ -2,28 +2,28 @@ from typing import List
 from fastapi import FastAPI, HTTPException, status
 from fastapi.params import Depends
 from sqlalchemy.orm.session import Session
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 
 from src import crud, schemas, models
 from src.database import engine, get_db
+from src.token import create_access_token
+from src.util import authenticate_user, login_exception, get_current_user
+
+from src.oauth2 import oauth2_scheme
 
 app = FastAPI()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
 models.Base.metadata.create_all(bind=engine)
 
 
-@app.post('/token')
-def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = crud.get_user_by_email(user_email=form.username, db=db)
+@app.post('/token', response_model=schemas.Token)
+async def login_for_token_access(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = authenticate_user(email=form_data.username,
+                             password=form_data.password, db=db)
     if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=f'Email incorrect.')
-    hashed_password = crud.hash_password(form.password)
-    if not hashed_password == user.hashed_password:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=f'Email or password incorrect')
-    return {"access_token": user.email, "token_type": "bearer"}
+        raise login_exception
+    access_token = create_access_token(data={"sub": user.email})
+    return {'access_token': access_token, 'token_type': 'bearer'}
 
 
 @app.get('/locked/')
@@ -69,10 +69,6 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return users
 
 
-@app.post('/user/{user_id}/items', tags=['User'], response_model=schemas.Item)
-def create_user_item(user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)):
-    user = crud.get_user(db=db, user_id=user_id)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f'no user with {user_id} found')
+@app.post('/user/items', tags=['User'], response_model=schemas.Item)
+def create_user_item(item: schemas.ItemCreate, db: Session = Depends(get_db), user: schemas.User = Depends(get_current_user)):
     return crud.create_user_item(db=db, item=item, owner_id=user.id)

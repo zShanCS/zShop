@@ -7,6 +7,10 @@ from sqlalchemy.sql.schema import RETAIN_SCHEMA
 from . import models, schemas
 
 
+def hash_password(password: str):
+    return password + 'fakehash'
+
+
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
@@ -20,7 +24,7 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_user(db: Session, user: schemas.UserCreate):
-    hashed_password = user.password + 'fakehash'
+    hashed_password = hash_password(user.password)
     db_user = models.User(name=user.name, email=user.email,
                           hashed_password=hashed_password)
     db.add(db_user)

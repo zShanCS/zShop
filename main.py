@@ -2,7 +2,7 @@ from typing import List
 from fastapi import FastAPI, HTTPException, status
 from fastapi.params import Depends
 from sqlalchemy.orm.session import Session
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from src import crud, schemas, models
 from src.database import engine, get_db
@@ -11,6 +11,19 @@ app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
 models.Base.metadata.create_all(bind=engine)
+
+
+@app.post('/token')
+def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = crud.get_user_by_email(user_email=form.username, db=db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f'Email incorrect.')
+    hashed_password = crud.hash_password(form.password)
+    if not hashed_password == user.hashed_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f'Email or password incorrect')
+    return {"access_token": user.email, "token_type": "bearer"}
 
 
 @app.get('/locked/')

@@ -1,7 +1,19 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, SMALLINT
 from sqlalchemy.orm import relationship
 
 from .database import Base
+
+
+class Review(Base):
+    __tablename__ = 'reviews'
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    rating = Column(SMALLINT, index=True)
+    review = Column(String)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    item_id = Column(Integer, ForeignKey('items.id'))
+
+    reviewer = relationship('User', back_populates='reviews')
+    item = relationship('Item', back_populates='reviews')
 
 
 class Item(Base):
@@ -14,6 +26,7 @@ class Item(Base):
     owner_id = Column(Integer, ForeignKey('users.id'))
 
     owner = relationship('User', back_populates='items')
+    reviews = relationship('Review', back_populates='item')
 
 
 class User(Base):
@@ -24,3 +37,4 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
 
     items = relationship('Item', back_populates='owner')
+    reviews = relationship('Review', back_populates='reviewer')

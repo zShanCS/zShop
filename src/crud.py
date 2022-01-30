@@ -1,7 +1,9 @@
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 
 from . import models, schemas
+from src.util import item_price_exception
 from .hashing import get_password_hash
 
 
@@ -36,8 +38,23 @@ def get_item(db: Session, item_id: int):
 
 
 def create_user_item(db: Session, item: schemas.ItemCreate, owner_id: int):
+    if item.price <= 0:
+        raise item_price_exception
     db_item = models.Item(**item.dict(), owner_id=owner_id)
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
     return db_item
+
+
+def create_item_review(db: Session, user_id: int, item_id: int, review: schemas.ReviewCreate):
+    db_review = models.Review(
+        **review.dict(), user_id=user_id, item_id=item_id)
+    db.add(db_review)
+    db.commit()
+    db.refresh(db_review)
+    return db_review
+
+
+def get_all_reviews(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Review).offset(skip).limit(limit).all()

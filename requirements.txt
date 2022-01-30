@@ -2,3 +2,5 @@ fastapi==0.70.0
 uvicorn[standard]
 python-jose[cryptography]
 passlib[bcrypt]
+sqlalchemy
+python-multipart

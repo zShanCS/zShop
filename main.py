@@ -36,12 +36,13 @@ def all_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_items(skip=skip, limit=limit, db=db)
 
 
-@app.get('/item/{id}', tags=['Item'], response_model=schemas.Item)
+@app.get('/item/{id}', tags=['Item'], response_model=schemas.ItemShow)
 def get_item_by_id(id: int, db: Session = Depends(get_db)):
     item = crud.get_item(db=db, item_id=id)
     if item is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f'No Item with id: {id} found.')
+    print(item.__dict__)
     return item
 
 
@@ -60,6 +61,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    print(db_user.__dict__)
     return db_user
 
 
@@ -72,3 +74,25 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 @app.post('/user/items', tags=['User'], response_model=schemas.Item)
 def create_user_item(item: schemas.ItemCreate, db: Session = Depends(get_db), user: schemas.User = Depends(get_current_user)):
     return crud.create_user_item(db=db, item=item, owner_id=user.id)
+
+
+@app.post('/items/{item_id}/review', tags=['Review'], response_model=schemas.ReviewShow)
+def create_review(item_id: int, review: schemas.ReviewCreate, db: Session = Depends(get_db), user: schemas.User = Depends(get_current_user)):
+    if review.rating < 0 or review.rating > 5:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='rating must be between 0 and 5')
+    if len(review.review) < 10:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='review text too small')
+    item = crud.get_item(db=db, item_id=item_id)
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'No Item with id: {item_id} found.')
+    db_review = crud.create_item_review(
+        db=db, item_id=item.id, user_id=user.id, review=review)
+    return db_review
+
+
+@app.get('/reviews', tags=['Review'], response_model=List[schemas.ReviewShow])
+def get_all_reviews(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_all_reviews(db=db, skip=skip, limit=limit)

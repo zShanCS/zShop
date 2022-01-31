@@ -5,6 +5,7 @@ from pydantic import BaseModel
 class ItemCreate(BaseModel):
     name: str
     price: float
+    stock:int
     description: Optional[str] = None
 
 
@@ -85,6 +86,10 @@ class ReviewShow(ReviewBase):
     reviewer: UserBase
 
 
+class ReviewShowWithItem(ReviewShow):
+    item: ItemBase
+
+
 class ItemShow(ItemBase):
     id: int
     owner_id: int
@@ -93,3 +98,4 @@ class ItemShow(ItemBase):
 
     class Config():
         orm_mode = True
+

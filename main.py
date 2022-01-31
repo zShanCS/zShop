@@ -84,6 +84,11 @@ def create_review(item_id: int, review: schemas.ReviewCreate, db: Session = Depe
     if len(review.review) < 10:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='review text too small')
+    #disallow the user from reviewing same thing twice
+    user_item_review = db.query(models.Review).filter(models.Review.user_id == user.id , models.Review.item_id==item_id).first()
+    if user_item_review:
+        #means user already has a review for this item => disallow current review
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'User {user.id} already has a review for item {item_id}')
     item = crud.get_item(db=db, item_id=item_id)
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -93,6 +98,7 @@ def create_review(item_id: int, review: schemas.ReviewCreate, db: Session = Depe
     return db_review
 
 
-@app.get('/reviews', tags=['Review'], response_model=List[schemas.ReviewShow])
+@app.get('/reviews', tags=['Review'], response_model=List[schemas.ReviewShowWithItem])
 def get_all_reviews(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_all_reviews(db=db, skip=skip, limit=limit)
+

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, SMALLINT
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, SMALLINT, DateTime
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -22,12 +22,12 @@ class Item(Base):
     name = Column(String, index=True)
     price = Column(Float, index=True, nullable=False)
     description = Column(String)
-
+    stock: Column(Integer)
     owner_id = Column(Integer, ForeignKey('users.id'))
 
     owner = relationship('User', back_populates='items')
     reviews = relationship('Review', back_populates='item')
-
+    carts = relationship('Cart', back_populates='item')
 
 class User(Base):
     __tablename__ = 'users'
@@ -38,3 +38,18 @@ class User(Base):
 
     items = relationship('Item', back_populates='owner')
     reviews = relationship('Review', back_populates='reviewer')
+    cart = relationship('Cart', back_populates='owner')
+
+
+class Cart(Base):
+    __tablename__ = 'carts'
+    id = Column(Integer, primary_key=True, index=True)
+    last_updated = Column(DateTime, index=True)
+
+    user_id= Column(Integer, ForeignKey('users.id'), index=True)
+    item_id= Column(Integer, ForeignKey('items.id'), index=True)
+
+    quantity= Column(Integer)
+
+    owner = relationship('User', back_populates='cart')
+    item = relationship('Item', back_populates='carts')

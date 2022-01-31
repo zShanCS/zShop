@@ -58,3 +58,8 @@ def create_item_review(db: Session, user_id: int, item_id: int, review: schemas.
 
 def get_all_reviews(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Review).offset(skip).limit(limit).all()
+
+
+def get_user_item_review(db: Session, user_id: int, item_id: int):
+    return db.query(models.Review).filter(
+        models.Review.user_id == user_id, models.Review.item_id == item_id).first()

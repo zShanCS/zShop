@@ -1,21 +1,54 @@
+from datetime import datetime
+from logging import lastResort
 from typing import List, Optional
 from pydantic import BaseModel
 
 
-class ItemCreate(BaseModel):
-    name: str
-    price: float
-    stock:int
-    description: Optional[str] = None
-
-
-class ItemBase(ItemCreate):
+class Cart_DB(BaseModel):
     id: int
+    last_updated: datetime
+    user_id: int
+    item_id: int
+    quantity: int
 
     class Config():
         orm_mode = True
 
 
+class ItemCreate(BaseModel):
+    name: str
+    price: float
+    available: int
+    description: Optional[str] = None
+
+
+class ItemBase(BaseModel):
+    id: int
+    name: str
+    price: float
+    description: Optional[str] = None
+
+    class Config():
+        orm_mode = True
+
+
+class ItemInfo(BaseModel):
+    id: int
+    name: str
+    price: float
+    description: Optional[str] = None
+
+    class Config():
+        orm_mode = True
+
+
+class CartItemShow(BaseModel):
+    item: ItemInfo
+    last_updated: datetime
+    quantity: int
+
+    class Config():
+        orm_mode = True
 # for reading data from db
 
 
@@ -43,6 +76,14 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     items: List[ItemBase] = []
+
+    class Config():
+        orm_mode = True
+
+
+class UserProfile(User):
+    pass
+    cart: List[CartItemShow] = []
 
     class Config():
         orm_mode = True
@@ -87,15 +128,12 @@ class ReviewShow(ReviewBase):
 
 
 class ReviewShowWithItem(ReviewShow):
-    item: ItemBase
+    item: ItemInfo
 
 
 class ItemShow(ItemBase):
-    id: int
-    owner_id: int
     reviews: List[ReviewShow] = []
     owner: UserBase
 
     class Config():
         orm_mode = True
-

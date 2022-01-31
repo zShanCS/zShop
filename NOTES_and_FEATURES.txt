@@ -1,0 +1,24 @@
+DONE:
+1. create, get user by id and email
+2. create, get item by id
+3. create database connections and models for item and user
+4. implement hashing of password
+5. implement authentication
+6. Cart functionality DONE
+  6.1. user can add item in cart with new quantity
+    6.1.1. item must be available
+    6.1.2. quantity will be the new quantity supposed to be in cart
+    6.1.3. quantity must be > 1 and < 11
+  6.2. to delete an item from cart, special delete method is used
+    6.2.1. this is done since the quantity of 0 is disallowed in db
+  6.3 get cart method simply gives back the cart of current user
+
+TODO:
+
+
+
+LATERS_BABY:
+0. get items by name like in text search
+
+THINGS_TO_REMEMBER:
+0. the item is created against the user by using their auth token and getting their email from it

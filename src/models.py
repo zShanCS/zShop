@@ -22,12 +22,13 @@ class Item(Base):
     name = Column(String, index=True)
     price = Column(Float, index=True, nullable=False)
     description = Column(String)
-    stock: Column(Integer)
+    available = Column(Integer)
     owner_id = Column(Integer, ForeignKey('users.id'))
 
     owner = relationship('User', back_populates='items')
     reviews = relationship('Review', back_populates='item')
     carts = relationship('Cart', back_populates='item')
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -46,10 +47,10 @@ class Cart(Base):
     id = Column(Integer, primary_key=True, index=True)
     last_updated = Column(DateTime, index=True)
 
-    user_id= Column(Integer, ForeignKey('users.id'), index=True)
-    item_id= Column(Integer, ForeignKey('items.id'), index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), index=True)
+    item_id = Column(Integer, ForeignKey('items.id'), index=True)
 
-    quantity= Column(Integer)
+    quantity = Column(Integer)
 
     owner = relationship('User', back_populates='cart')
     item = relationship('Item', back_populates='carts')

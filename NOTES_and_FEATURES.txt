@@ -14,7 +14,7 @@ DONE:
   6.3 get cart method simply gives back the cart of current user
 
 TODO:
-
+0. refactor the whole thing
 
 
 LATERS_BABY:

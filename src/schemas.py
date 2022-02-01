@@ -68,6 +68,20 @@ class Item(ItemBase):
         orm_mode = True
 
 
+class ItemShowCreate(Item):
+    available: int
+
+    class Config():
+        orm_mode = True
+
+
+class ItemShowOwner(ItemBase):
+    available: int
+
+    class Config():
+        orm_mode = True
+
+
 class UserCreate(UserBase):
     password: str
 
@@ -75,15 +89,21 @@ class UserCreate(UserBase):
 
 
 class User(UserBase):
-    items: List[ItemBase] = []
+    items: List[Item] = []
 
     class Config():
         orm_mode = True
 
 
 class UserProfile(User):
-    pass
     cart: List[CartItemShow] = []
+
+    class Config():
+        orm_mode = True
+
+
+class UserOwnProfile(UserProfile):
+    items: List[ItemShowOwner] = []
 
     class Config():
         orm_mode = True

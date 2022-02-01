@@ -2,8 +2,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 
-from . import models, schemas
-from src.util import item_price_exception
+from src import models, schemas
+from . import util
 from .hashing import get_password_hash
 
 
@@ -39,7 +39,7 @@ def get_item(db: Session, item_id: int):
 
 def create_user_item(db: Session, item: schemas.ItemCreate, owner_id: int):
     if item.price <= 0:
-        raise item_price_exception
+        raise util.item_price_exception
     db_item = models.Item(**item.dict(), owner_id=owner_id)
     db.add(db_item)
     db.commit()
